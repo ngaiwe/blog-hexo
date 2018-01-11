@@ -3,3 +3,4 @@
 /themes/next
 package-lock.json
 .DS_Store
+.deploy_git/
