@@ -162,7 +162,7 @@ promiseA.then((value)=>{
 })
 ```
 
-## 来让我们看一下myPromise.js这个文件,myPromise构造函数不做改动，先说一下then方法的改变，根据promise/A+协议，then必须返回一个promise对象，所以创建promise2，让then最终返回的是一个promise对象，在promise2中构建myPromise实例用法就是将task函数展现出来，根据协议说Promise解析过程 是以一个promise和一个值做为参数的抽象过程，可表示为[[Resolve]](promise, x)，所以重新封装一个函数resolvePromise接收promise2，x(协议：onFulfilled 或 onRejected 返回了值x, 则执行Promise 解析流程[[Resolve]](promise2, x)），resolve,reject封装函数调用
+## 来让我们看一下myPromise.js这个文件,myPromise构造函数不做改动，先说一下then方法的改变，根据promise/A+协议，then必须返回一个promise对象，所以创建promise2，让then最终返回的是一个promise对象，在promise2中构建myPromise实例用法就是将task函数展现出来，根据协议说Promise解析过程 是以一个promise和一个值做为参数的抽象过程，可表示为[[Resolve]](promise, x)，所以重新封装一个函数resolvePromise接收promise2，x(协议：onFulfilled 或 onRejected 返回了值x, 则执行Promise 解析流程[[Resolve]](promise2, x)），resolve,reject封装函数调用,在其中先判断onFulFilled和onRejected是否是函数如果不是则直接返回接收值
 ``` bash
 myPromise.js
 function resolvePromise(promise2,x,resolve,reject){
@@ -170,27 +170,45 @@ function resolvePromise(promise2,x,resolve,reject){
 }
 
 myPromise.prototype.then = function(onFulFilled,onRejected){
+    onFulFilled = typeof onFulFilled === 'function'?onFulFilled:value=>value
+    onRejected = typeof onRejected === 'function'?onRejected:reason=>{throw reason}
     let self = this
     let promise2
     if(self.state == 'fulfilled'){
-        promise2 = new myPromise((resolve,reject)=>{
-            let x = onFulFilled(self.value)
-            resolvePromise(promise2,x,resolve,reject)
+        promise2 = new MyPromise((resolve,reject)=>{
+            try {
+                let x = onFulFilled(self.value)
+                resolvePromise(promise2,x,resolve,reject)
+            } catch (error) {
+                reject(err)
+            }
         })
     }else if(self.state == 'rejected'){
-        promise2 = new myPromise((resolve,reject)=>{
-            let x = onRejected(self.reason)
-            resolvePromise(promise2,x,resolve,reject)
+        promise2 = new MyPromise((resolve,reject)=>{
+            try {
+                let x = onRejected(self.reason)
+                resolvePromise(promise2,x,resolve,reject)
+            } catch (error) {
+                reject(error)
+            }
         })
     }else if(self.state == 'pending'){
-        promise2 = new myPromise((resolve,reject)=>{
+        promise2 = new MyPromise((resolve,reject)=>{
             self.onResolvedCallbacks.push((value)=>{
-                let x = onFulFilled(value)
-                resolvePromise(promise2,x,resolve,reject)
+                try {
+                    let x = onFulFilled(value)
+                    resolvePromise(promise2,x,resolve,reject)
+                } catch (error) {
+                    reject(error)
+                }
             })
             self.onRejectedCallbacks.push((reason)=>{
-                let x = onRejected(reason)
-                resolvePromise(promise2,x,resolve,reject)
+                try {
+                    let x = onRejected(reason)
+                    resolvePromise(promise2,x,resolve,reject)
+                } catch (error) {
+                    reject(error)
+                }
             })
         })
     }
