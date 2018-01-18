@@ -21,7 +21,7 @@ tags:
 
 ## 任务队列
 ### 任务可以分为两种，一种为同步，另一种为异步（具有回调函数）。如下图：
-![](./images/eventloop.png)
+![](/eventloop/eventloop.png)
 ### 所有的同步任务都在主线程上执行，形成一个执行栈 stack。当所有同步任务执行完毕后，它会去执行microtask queue中的异步任务（nextTick，Promise），将他们全部执行。主线程之外还有一个任务队列task queue，当有异步任务（DOM，AJAX，setTimeout，setImmediate）有结果的时候，就在任务队列里放一个事件，一旦执行栈和microtask queue任务执行完毕，系统就会读取任务队列，将取出排在最前面的事件加入执行栈执行，这种机制就是任务队列。
 
 ## Event Loop
@@ -61,7 +61,7 @@ setTimeout(function timeout() {
 ### 2.解析完毕后调用Node API
 ### 3.LIBUV库负责Node API的执行，将不同任务分配给不同的线程，形成一个Event Loop（任务队列）
 ### 4.最后Chrom V8引擎将结果返回给用户
-![](./images/nodesystem.png)
+![](/eventloop/nodesystem.png)
 
 ## Node.js Event Loop原理
 ### node.js的特点是事件驱动，非阻塞单线程。当应用程序需要I/O操作的时候，线程并不会阻塞，而是把I/O操作交给底层库（LIBUV）。此时node线程会去处理其他任务，当底层库处理完I/O操作后，会将主动权交还给Node线程，所以Event Loop的用处是调度线程，例如：当底层库处理I/O操作后调度Node线程处理后续工作，所以虽然node是单线程，但是底层库处理操作依然是多线程
@@ -114,19 +114,19 @@ setTimeout(function timeout() {
 
 ## 具体分析，看下图：
 ### 1.当setTimeout时间最小，读取文件不存在的时候
-![](./images/eventloop-setTimeout0-unfile.png)
+![](/eventloop/eventloop-setTimeout0-unfile.png)
 ### 如图所示，分别是nextTick、readFile、setTimeout、setImmediate，然而现在并没有1.txt和2.txt文件，输出结果是next Tick、setTimeout、readFile、setImmediate，在event loop中先判断的是timeers，最先出书next Tick因为process.nextTick的实现是基于v8 MicroTask(是在当前js call stack 中没有可执行代码才会执行的队列,低于js call stack 代码，但高于事件循环，不属于Event Loop，上面javascript的Event Loop介绍过了，所以最先输出。然后开始走Event Loop，第一阶段是timers，判断setTimeout到期，所以输出setTimeout，进入下一阶段，poll将I/O操作权交出，新线程操作，但是并没有相关读取文件，所以直接返回回调函数，所以处处readFile，最后到check阶段，输出setImmediate
 
 ### 2.当setTimeout时间最小，读取文件存在的时候
-![](./images/eventloop-setTimeout0-file.png)
+![](/eventloop/eventloop-setTimeout0-file.png)
 ### 如图所示，分别是nextTick、setTimeout、setImmediate、readFile，这次readFile在最后面，是因为文件存在，执行到poll阶段的时候，执行I/O操作，node线程开始执行check阶段，当交出的I/O操作结束后，返回给Event Loop所以再执行readFile的回调函数，所以他在最后面
 
 ### 3.当setTimeout时间为100毫秒，读取文件不存在的时候
-![](./images/eventloop-setTimeout100-unfile.png)
+![](/eventloop/eventloop-setTimeout100-unfile.png)
 ### 如图所示，分别是nextTick、readFile、setImmediate、setTimeout，它和1不同的地方是setTimeout排在最后了，这是因为在执行timers的时候，setTimeout没有到期，所以直接执行下一阶段，当执行完poll的时候，会去执行查看定时器有没有到期，如果没有下一次Event Loop再次查看，知道定时器到期，所以他在最后面
 
 ### 4.当setTimeout时间为100毫秒，读取文件存在的时候
-![](./images/eventloop-setTimeout100-file.png)
+![](/eventloop/eventloop-setTimeout100-file.png)
 ### 如图所示，分别是nextTick、setImmediate、readFile、setTimeout，它和2的区别是setTimeout在最后，原因和3一样。
 
 ## 总结一下
