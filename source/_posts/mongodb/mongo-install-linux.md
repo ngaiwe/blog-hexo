@@ -57,4 +57,4 @@ mongod -f /mongodb/etc/mongo.conf
 ```
 ### 服务器防火墙添加27017端口规则
 ### 在mac中打开mongohub视图工具，添加数据库，按需求是否设置过集合用户名密码，没有则不填写，选择服务器创建的Database或者为空代表整个mongodb数据库
-![](/mongo-install-linux/mongohub.png)
+![](mongo-install-linux/mongohub.png)
