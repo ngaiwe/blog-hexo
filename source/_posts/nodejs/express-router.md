@@ -237,7 +237,7 @@ app.listen(3000);
 
 ### 6.模板解析
 
-> 这里主要说的士ejs模板，具体API请查阅 [EJS官网](http://www.embeddedjs.com)
+> 这里主要说的是ejs模板，具体API请查阅 [EJS官网](http://www.embeddedjs.com)
 
 - 安装ejs
 
